@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 
-function PostFom({ post }) {
-    const { register, handleSubmit, watch, setValue, control, getValue } = useForm({
+export default function PostForm({ post }) {
+    const { register, handleSubmit, watch, setValue, control, getValues } = useForm({
         defaultValues: {
             title: post?.title || '',
             slug: post?.slug || '',
@@ -57,7 +57,7 @@ function PostFom({ post }) {
             .toLowerCase()
             .replace(/[a-zA-Z\d\s]+/g,'-')
             .replace(/\s/g,'-')
-            return ''
+            
         }
     },[])
     React.useEffect(()=>{
@@ -106,7 +106,7 @@ return ()=>subscription.unsubscribe()
                 />
                 {post && (
                     <div className="w-full mb-4">
-                        <img src={appwriteSerice.getFilePreview(post.featuredImage)} alt={post.title}
+                        <img src={appwriteService.getFilePreview(post.featuredImage)} alt={post.title}
                         className="rounded-lg"
                         />
                         
