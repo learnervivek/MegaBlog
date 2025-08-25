@@ -12,7 +12,7 @@ export default function Post() {
 
     const userData = useSelector((state) => state.auth.userData);
 
-    const isAuthor = post && userData ? post.userId === userData.$id : false;
+    const isAuthor = post && userData ? post.userid === userData.$id : false;
 
     useEffect(() => {
         if (slug) {
@@ -26,7 +26,7 @@ export default function Post() {
     const deletePost = () => {
         appwriteService.deletePost(post.$id).then((status) => {
             if (status) {
-                appwriteService.deleteFile(post.featuredImage);
+                appwriteService.deleteFile(post.featureimage);
                 navigate("/");
             }
         });
@@ -37,10 +37,17 @@ export default function Post() {
             <Container>
                 <div className="w-full flex justify-center mb-4 relative border rounded-xl p-2">
                     <img
-                        src={appwriteService.getFilePreview(post.featuredImage)}
+                        src={appwriteService.getFileView(post.featureimage)}
                         alt={post.title}
-                        className="rounded-xl"
+                        className="rounded-xl w-full max-h-96 object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'block';
+                        }}
                     />
+                    <div className="rounded-xl w-full max-h-96 bg-gray-200 flex items-center justify-center text-gray-500" style={{display: 'none'}}>
+                      Image not available
+                    </div>
 
                     {isAuthor && (
                         <div className="absolute right-6 top-6">

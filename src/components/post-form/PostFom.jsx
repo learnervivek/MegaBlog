@@ -11,39 +11,54 @@ export default function PostForm({ post }) {
         defaultValues: {
             title: post?.title || '',
             slug: post?.slug || '',
-            content: post?.status || '',
+            content: post?.content || '',
             status: post?.status || 'active',
         },
     })
 
     const navigate = useNavigate()
-    const userData = useSelector(state => state.user.userData)
+    const userData = useSelector(state => state.auth.userData)
     const submit = async (data) => {
+        // Warn user if content exceeds 255 characters (temporary limit)
+        if (data.content && data.content.length > 107374182) {
+            const proceed = window.confirm(
+                `Warning: Your content is ${data.content.length} characters long. Due to current database limitations, it will be truncated to 255 characters. Do you want to continue?`
+            );
+            if (!proceed) return;
+        }
+        
         if (post) {
-            const file = data.image[0] ? appwriteService.uploadFile(data.image[0]) : null
+            const file = data.image[0] ? await appwriteService.uploadFile(data.image[0]) : null
 
             if (file) {
-                appwriteService.deleteFile(post.featuredImage)
+                appwriteService.deleteFile(post.featureimage)
             }
             const dbPost = await appwriteService.updatePost(post.$id, {
                 ...data,
-                featuredImage: file ? file.$id : undefined,
+                featureimage: file ? file.$id : post.featureimage,
             })
             if (dbPost) {
-                navigate(`/post/${dbPost.$id}`)
+                navigate(`/post/${data.slug || dbPost.$id}`)
             }
         } else {
-            const file = await appwriteService.uploadFile(data.image[0]);
-            if (file) {
-                const fileId = file.$id
-                data.featuredImage = fileId
-                const dbPost = await appwriteService.createPost.createPost({
-                    ...data,
-                    userId: userData.$id,
-                })
-                if (dbPost) {
-                    navigate(`/post/${dbPost.$id}`)
+            try {
+                const file = await appwriteService.uploadFile(data.image[0]);
+                console.log("Uploaded file:", file)
+                if (file) {
+                    const fileId = file.$id
+                    data.featureimage = fileId
+                    console.log("Creating post with user ID:", userData.$id);
+                    const dbPost = await appwriteService.createPost({
+                        ...data,
+                        userid: userData.$id,
+                    })
+                    if (dbPost) {
+                        navigate(`/post/${data.slug || dbPost.$id}`)
+                    }
                 }
+            } catch (error) {
+                console.error("Error creating post:", error);
+                alert(`Failed to create post: ${error.message}`);
             }
         }
 
@@ -55,7 +70,6 @@ export default function PostForm({ post }) {
             return value
             .trim()
             .toLowerCase()
-            .replace(/[a-zA-Z\d\s]+/g,'-')
             .replace(/\s/g,'-')
             
         }
@@ -90,13 +104,13 @@ return ()=>subscription.unsubscribe()
                 }}
                 />
                 <RTE
-                label="Content: "
+                label="content: "//changed
                 name="content"
                 control={control}
                 defaultValue={getValues("content")}
                 />
             </div>
-            <div className="1/3 px-2">
+            <div className="w-1/3 px-2">
                 <Input
                 label="Featured Image"
                 type="file"
@@ -106,10 +120,18 @@ return ()=>subscription.unsubscribe()
                 />
                 {post && (
                     <div className="w-full mb-4">
-                        <img src={appwriteService.getFilePreview(post.featuredImage)} alt={post.title}
-                        className="rounded-lg"
+                        <img 
+                          src={appwriteService.getFileView(post.featureimage)} 
+                          alt={post.title}
+                          className="rounded-lg w-full h-48 object-cover"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'block';
+                          }}
                         />
-                        
+                        <div className="rounded-lg w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500" style={{display: 'none'}}>
+                          Image not available
+                        </div>
                     </div>
                 )}
                 <Select
