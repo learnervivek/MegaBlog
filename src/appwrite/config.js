@@ -28,7 +28,7 @@ async logout() {
             console.log("Appwrite serive :: logout :: ", error);
         }
     }
-async createPost({ title, slug, content, featureimage, status, userid }) {
+async createPost({ title, content, featureimage, status, userid }) {
   try {
     // Validate required fields
     if (!title || !content || !featureimage || !status || !userid) {
@@ -37,16 +37,16 @@ async createPost({ title, slug, content, featureimage, status, userid }) {
     
     // Remove slug from database storage - it will be used only for URL routing
     // Temporary workaround: truncate content to 255 chars until collection is updated
-    const contentString = String(content);
-    const truncatedContent = contentString.length > 255 
-      ? contentString.substring(0, 252) + "..." 
-      : contentString;
+    // const contentString = String(content);
+    // const truncatedContent = contentString.length > 250000
+    //   ? contentString.substring(0, 250000) + "..." 
+    //   : contentString;
     
-    console.log(`Content length: ${contentString.length}, truncated: ${truncatedContent.length <= 255}`);
+    // console.log(`Content length: ${contentString.length}, truncated: ${truncatedContent.length <= 255}`);
     
     const documentData = {
       title: String(title).trim(),
-      content: truncatedContent,
+      content: content,
       featureimage: String(featureimage),
       status: String(status),
       userid: String(userid),
@@ -73,7 +73,7 @@ async createPost({ title, slug, content, featureimage, status, userid }) {
 }
 
 
-    async updatePost(documentId, {title, slug, content, featureimage, status}){
+    async updatePost(documentId, {title, content, featureimage, status}){
         try {
             return await this.databases.updateDocument(
                 conf.appwriteDatabaseId,
@@ -123,8 +123,7 @@ async createPost({ title, slug, content, featureimage, status, userid }) {
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId,
                 queries,
-                
-
+            
             )
         } catch (error) {
             console.log("Appwrite service :: getPosts :: error", error);

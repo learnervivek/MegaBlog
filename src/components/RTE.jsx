@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Editor } from '@tinymce/tinymce-react'
 import { Controller } from 'react-hook-form'
+import conf from '../conf/conf.js'
 
 export default function RTE({ name, control, label, defaultValue = "" }) {
     const [editorError, setEditorError] = useState(false);
@@ -16,7 +17,7 @@ export default function RTE({ name, control, label, defaultValue = "" }) {
                     <div>
                         {!editorError ? (
                     <Editor
-                    apiKey="3x00qqkw4efj4rok689zt8zmy89slm7q83c90aikg5av4ifz"
+                    apiKey={conf.editorApi}
                         initialValue={defaultValue}
                                 value={value}
                         init={{
